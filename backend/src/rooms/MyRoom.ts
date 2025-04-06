@@ -48,29 +48,32 @@ export class GameRoom extends Room<GameRoomState> {
       }
 
       // Broadcast the update to all clients except sender
-      this.broadcast(
-        "updatePosition",
-        {
-          sessionId: client.sessionId,
-          x: message.x,
-          y: message.y,
-          animation: message.animation,
-        },
-        { except: client }
-      );
+      this.broadcast("updatePosition", {
+        sessionId: client.sessionId,
+        x: message.x,
+        y: message.y,
+        animation: message.animation
+      }, { except: client });
+    });
+
+    this.onMessage("chatMessage", (client, data) => {
+      // Broadcast chat message to all clients
+      this.broadcast("chatMessage", {
+        senderId: client.sessionId,
+        senderName: data.senderName || "Player",
+        text: data.text
+      });
     });
 
     // Handle room collision events
     this.onMessage("roomCollision", (client, message) => {
-      console.log(
-        `Player ${client.sessionId} collided with room ${message.roomId}`
-      );
+      console.log(`Player ${client.sessionId} collided with room ${message.roomId}`);
 
       // Broadcast room collision to all clients
       this.broadcast("roomCollision", {
         sessionId: client.sessionId,
         roomId: message.roomId,
-        playerPosition: message.playerPosition,
+        playerPosition: message.playerPosition
       });
     });
   }
@@ -80,7 +83,7 @@ export class GameRoom extends Room<GameRoomState> {
 
     // Create player state for the new client
     const player = new PlayerState();
-    player.x = options.x || 100;
+    player.x = options.x || 250;
     player.y = options.y || 100;
     player.animation = options.animation || "idle-down";
 
@@ -91,7 +94,7 @@ export class GameRoom extends Room<GameRoomState> {
     this.broadcast("playerJoined", {
       sessionId: client.sessionId,
       x: player.x,
-      y: player.y,
+      y: player.y
     });
   }
 
@@ -103,7 +106,7 @@ export class GameRoom extends Room<GameRoomState> {
 
     // Notify all remaining clients about the player leaving
     this.broadcast("playerLeft", {
-      sessionId: client.sessionId,
+      sessionId: client.sessionId
     });
   }
 
